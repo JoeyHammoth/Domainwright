@@ -6,9 +6,10 @@ name: validate
 # Security: never run this on pull_request. A self-hosted runner attached to a
 # public repo can execute fork code. Keep it to protected-branch pushes and
 # manual dispatch (see SECURITY.md).
+# Manual only until a self-hosted runner is registered: a push-triggered job with
+# no runner queues forever and reports nothing. Add the push trigger back once the
+# runner in SECURITY.md exists.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

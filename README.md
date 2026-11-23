@@ -4,6 +4,8 @@
 
 [![static checks](https://github.com/JoeyHammoth/Domainwright/actions/workflows/static.yml/badge.svg)](https://github.com/JoeyHammoth/Domainwright/actions/workflows/static.yml)
 
+**[Website](https://joeyhammoth.github.io/Domainwright/)** · **[Wiki](https://github.com/JoeyHammoth/Domainwright/wiki)** · **[Spec](SPEC.md)**
+
 Domainwright lets you raise or lower any character's **domain limit** — yours, your vassals', a rival's — and
 have the game treat the new number as real. Because the override is expressed as ordinary `domain_limit`
 character modifiers, the vanilla penalties, tooltips and AI all read it without any AI script being replaced.

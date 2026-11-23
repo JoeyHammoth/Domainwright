@@ -1,0 +1,7 @@
+# CK3 reads LF reliably; keep one line ending everywhere and stop Git from
+# rewriting scripts on Windows checkouts.
+* text=auto eol=lf
+
+*.png binary
+*.dds binary
+*.zip binary
