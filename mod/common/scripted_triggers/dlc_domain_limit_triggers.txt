@@ -1,0 +1,37 @@
+### Domainwright: triggers shared by the interaction, the menu and the window.
+
+### Root: the character whose limit would be edited.
+### Alive is the only hard requirement; everything else is access policy, checked by the
+### interaction because only it knows who the actor is.
+dlc_target_is_editable_trigger = {
+	is_alive = yes
+}
+
+### True when the override is non-zero and therefore worth showing or resetting.
+dlc_has_override_trigger = {
+	exists = var:dlc_delta
+	NOT = { var:dlc_delta = 0 }
+}
+
+### Root: the acting character (the interaction's actor). scope:recipient is the target.
+### Implements the dlc_access game rule.
+dlc_actor_may_edit_recipient_trigger = {
+	scope:recipient = { is_alive = yes }
+
+	if = {
+		limit = { has_game_rule = dlc_access_player_only }
+		this = scope:recipient
+	}
+	else_if = {
+		limit = { has_game_rule = dlc_access_player_and_realm }
+		OR = {
+			this = scope:recipient
+			scope:recipient = { top_liege ?= scope:actor }
+			scope:recipient ?= { top_liege ?= scope:actor }
+			AND = {
+				exists = scope:recipient.top_liege
+				scope:recipient.top_liege ?= this
+			}
+		}
+	}
+}

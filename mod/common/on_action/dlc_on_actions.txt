@@ -1,0 +1,32 @@
+### Domainwright: on_action additions.
+###
+### on_action definitions are additive across files: this file extends the vanilla hook
+### by declaring only the blocks it needs. It never redefines a vanilla trigger or event
+### list, so other mods doing the same thing compose instead of overwriting.
+###
+### Confirmed contract for on_title_gain_inheritance (common/on_action/title_on_actions.txt:3328):
+###   root = the new holder
+###   scope:title = the title that changed hands
+###   scope:previous_holder = the previous holder
+
+on_title_gain_inheritance = {
+	effect = {
+		if = {
+			limit = { exists = scope:previous_holder }
+			scope:previous_holder = {
+				save_scope_as = dlc_predecessor
+			}
+		}
+
+		dlc_inherit_on_succession_effect = yes
+	}
+}
+
+### A dead ruler's permanent modifiers are meaningless; strip them so the successor does
+### not inherit invisible rungs through a scope bug. The delta variable dies with the
+### character, which is why inheritance copies it explicitly above.
+on_death = {
+	effect = {
+		dlc_clear_ladder_effect = yes
+	}
+}

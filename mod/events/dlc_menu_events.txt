@@ -1,0 +1,74 @@
+namespace = dlc_menu
+
+### Domainwright: the Layer 1 menu.
+###
+### Fired on the target character by dlc_domain_limit_interaction, so root is the character
+### being edited and scope:dlc_actor is the player who opened it. Every option applies the
+### delta through the same scripted effect and then re-fires the event, which is how the
+### readout refreshes without any GUI code.
+
+dlc_menu.0001 = {
+	type = character_event
+	title = dlc_menu.0001.t
+	theme = realm
+	left_portrait = {
+		character = root
+	}
+
+	desc = {
+		triggered_desc = {
+			trigger = { exists = var:dlc_delta }
+			desc = dlc_menu.0001.desc_with_delta
+		}
+		desc = dlc_menu.0001.desc_no_delta
+	}
+
+	option = {
+		name = dlc_menu.0001.minus_five
+		dlc_change_delta_effect = { VALUE = -5 }
+		trigger_event = dlc_menu.0001
+	}
+
+	option = {
+		name = dlc_menu.0001.minus_one
+		dlc_change_delta_effect = { VALUE = -1 }
+		trigger_event = dlc_menu.0001
+	}
+
+	option = {
+		name = dlc_menu.0001.plus_one
+		dlc_change_delta_effect = { VALUE = 1 }
+		trigger_event = dlc_menu.0001
+	}
+
+	option = {
+		name = dlc_menu.0001.plus_five
+		dlc_change_delta_effect = { VALUE = 5 }
+		trigger_event = dlc_menu.0001
+	}
+
+	option = {
+		name = dlc_menu.0001.reset
+		trigger = { dlc_has_override_trigger = yes }
+		dlc_reset_effect = yes
+		trigger_event = dlc_menu.0001
+	}
+
+	### Visible only to the player: a world-wide cleanup used before uninstalling.
+	option = {
+		name = dlc_menu.0001.reset_all
+		trigger = { is_ai = no }
+		dlc_reset_all_effect = yes
+		trigger_event = dlc_menu.0001
+	}
+
+	### Layer 2: opens the custom window. [Verify] the widget's visibility expression.
+	option = {
+		name = dlc_menu.0001.open_window
+		dlc_sg_open_window = yes
+	}
+
+	option = {
+		name = dlc_menu.0001.close
+	}
+}

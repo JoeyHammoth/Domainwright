@@ -1,0 +1,30 @@
+### Domainwright: the Layer 1 entry point.
+###
+### The engine's own interaction format: category is required, desc must be localized,
+### on_accept runs in actor scope with scope:recipient available.
+### The effect fires the menu event on the recipient, so the event's root is the character
+### being edited while the actor stays reachable through the saved scope.
+
+dlc_domain_limit_interaction = {
+	category = interaction_category_vassal
+	common_interaction = yes
+	target_type = character
+	interface_priority = 10
+
+	desc = dlc_domain_limit_interaction_desc
+
+	is_shown = {
+		scope:recipient = { is_alive = yes }
+	}
+
+	is_valid_showing_failures_only = {
+		dlc_actor_may_edit_recipient_trigger = yes
+	}
+
+	on_accept = {
+		save_scope_as = dlc_actor
+		scope:recipient = {
+			trigger_event = dlc_menu.0001
+		}
+	}
+}

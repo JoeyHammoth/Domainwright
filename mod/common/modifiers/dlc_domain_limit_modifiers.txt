@@ -1,0 +1,61 @@
+### Domainwright: the domain_limit ladder.
+###
+### A vanilla character modifier cannot take a runtime value, so an arbitrary delta is
+### expressed as a sum of powers of two. dlc_apply_delta adds exactly the rungs that sum
+### to var:dlc_delta, which makes the set unique and the effect idempotent.
+###
+### Positive range: +1 .. +127 (bits 1..64). Negative range: -1 .. -63 (bits 1..32).
+### These are plain character modifiers, so every vanilla system that reads domain_limit
+### sees them. See docs/game-internals.md section 2.
+
+dlc_domain_limit_p1 = {
+	domain_limit = 1
+}
+
+dlc_domain_limit_p2 = {
+	domain_limit = 2
+}
+
+dlc_domain_limit_p4 = {
+	domain_limit = 4
+}
+
+dlc_domain_limit_p8 = {
+	domain_limit = 8
+}
+
+dlc_domain_limit_p16 = {
+	domain_limit = 16
+}
+
+dlc_domain_limit_p32 = {
+	domain_limit = 32
+}
+
+dlc_domain_limit_p64 = {
+	domain_limit = 64
+}
+
+dlc_domain_limit_n1 = {
+	domain_limit = -1
+}
+
+dlc_domain_limit_n2 = {
+	domain_limit = -2
+}
+
+dlc_domain_limit_n4 = {
+	domain_limit = -4
+}
+
+dlc_domain_limit_n8 = {
+	domain_limit = -8
+}
+
+dlc_domain_limit_n16 = {
+	domain_limit = -16
+}
+
+dlc_domain_limit_n32 = {
+	domain_limit = -32
+}
