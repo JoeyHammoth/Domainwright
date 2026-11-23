@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domainwright — the domain limit dial for Crusader Kings III</title>
+<meta name="description" content="Raise or lower any character's domain limit in Crusader Kings III, and have the game, the penalties and the AI treat it as real.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="https://img.icons8.com/?id=12566&format=png&size=64">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <img class="hero-crest" src="https://img.icons8.com/?id=12566&format=png&size=128" alt="" width="96" height="96">
+  <p class="eyebrow">A Crusader Kings III mod</p>
+  <h1>Domainwright</h1>
+  <p class="tagline">Every ruler has a domain limit. Now you hold the dial.</p>
+  <p class="status"><span class="dot"></span> Pre-release 0.1.0-dev — scripted core and the menu are built, not yet battle-tested</p>
+  <nav class="hero-actions">
+    <a class="btn btn-gold" href="#install">Install it</a>
+    <a class="btn btn-ink" href="https://github.com/JoeyHammoth/Domainwright">Read the source</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="panel intro">
+  <h2>What it does</h2>
+  <p class="lede">
+    Right-click any character, choose <strong>Domain Limit…</strong>, and nudge the number that decides how many
+    holdings they can personally keep. Because the override is an ordinary <code>domain_limit</code> modifier,
+    vanilla does the rest: the tooltip lists it, the over-limit penalties count it, and the AI acts on it.
+  </p>
+  <div class="cards">
+    <article class="card">
+      <img src="https://img.icons8.com/?id=24727&format=png&size=128" alt="" width="56" height="56">
+      <h3>Anyone, not just you</h3>
+      <p>Yourself, your vassals, an over-mighty rival. The menu works on any living character.</p>
+    </article>
+    <article class="card">
+      <img src="https://img.icons8.com/?id=117468&format=png&size=128" alt="" width="56" height="56">
+      <h3>No AI rewrites</h3>
+      <p>Nothing in the AI is replaced. The game already reads the limit as a statistic, so it simply reads the new one.</p>
+    </article>
+    <article class="card">
+      <img src="https://img.icons8.com/?id=5336&format=png&size=128" alt="" width="56" height="56">
+      <h3>Additive, always</h3>
+      <p>No vanilla file is overridden and every identifier is prefixed <code>dlc_</code>. It composes instead of conquering.</p>
+    </article>
+  </div>
+</section>
+
+<section class="panel ladder-panel">
+  <h2>The ladder, in your hands</h2>
+  <p class="lede">
+    The engine can't take a runtime number in a modifier, so Domainwright expresses your override as a sum of
+    powers of two — one rung per bit. Click a button: the lit rungs are exactly the modifiers that would be on
+    the character.
+  </p>
+
+  <div class="dial">
+    <div class="dial-head">
+      <span class="dial-label">Override</span>
+      <output id="delta" class="dial-value">0</output>
+      <span class="dial-note" id="delta-note">no rungs applied</span>
+    </div>
+
+    <div class="rungs" id="rungs" aria-live="polite"></div>
+
+    <div class="dial-controls">
+      <button class="btn btn-ink" data-step="-5">−5</button>
+      <button class="btn btn-ink" data-step="-1">−1</button>
+      <button class="btn btn-ink" data-step="1">+1</button>
+      <button class="btn btn-ink" data-step="5">+5</button>
+      <button class="btn btn-gold" data-step="reset">Clear</button>
+    </div>
+    <p class="fineprint">
+      Range is −63 to +127. Values are clamped, and the effect is idempotent — reapplying always leaves exactly
+      one rung set.
+    </p>
+  </div>
+</section>
+
+<section class="panel" id="install">
+  <h2>Install</h2>
+  <ol class="steps">
+    <li>
+      <h3>Take the zip</h3>
+      <p>Download the latest release from <a href="https://github.com/JoeyHammoth/Domainwright/releases">GitHub Releases</a>.</p>
+    </li>
+    <li>
+      <h3>Drop it in the mod folder</h3>
+      <p>Unzip so that <code>descriptor.mod</code> sits at the root of a folder inside your CK3 mod directory:</p>
+      <div class="copyline">
+        <code id="modpath">Documents/Paradox Interactive/Crusader Kings III/mod/domainwright/</code>
+        <button class="btn btn-small" id="copy" type="button">Copy</button>
+      </div>
+      <p class="fineprint">macOS: <code>~/Documents/Paradox Interactive/Crusader Kings III/mod/domainwright/</code> ·
+        Linux: <code>~/.local/share/Paradox Interactive/Crusader Kings III/mod/domainwright/</code></p>
+    </li>
+    <li>
+      <h3>Enable it in the launcher</h3>
+      <p>Open <strong>Mods</strong>, tick <strong>Domainwright</strong>, and start or load a campaign. Back up the save first — it is a pre-release.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="panel">
+  <h2>How to play</h2>
+  <div class="menu-demo" role="img" aria-label="Illustration of the in-game Domain Limit menu">
+    <div class="menu-title">
+      <img src="https://img.icons8.com/?id=16715&format=png&size=96" alt="" width="40" height="40">
+      The Domain Wright
+    </div>
+    <p class="menu-body">
+      <em>Countess Adela holds 4 holdings. The override is <span class="gold">+3</span> on top of the natural limit.</em>
+    </p>
+    <ul class="menu-options">
+      <li>Lower the limit by <span class="red">5</span></li>
+      <li>Lower the limit by <span class="red">1</span></li>
+      <li>Raise the limit by <span class="gold">1</span></li>
+      <li>Raise the limit by <span class="gold">5</span></li>
+      <li>Clear the override</li>
+    </ul>
+  </div>
+  <p class="lede">
+    Each click applies the change and reopens the menu, so you can keep clicking. Right-click the portrait of
+    anyone you are allowed to edit — the game rule decides who that is.
+  </p>
+</section>
+
+<section class="panel rules">
+  <h2>Game rules</h2>
+  <table>
+    <thead>
+      <tr><th>Rule</th><th>Settings</th><th>Default</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Who may edit</td>
+        <td>Anyone · Player only · Player and realm</td>
+        <td>Anyone</td>
+      </tr>
+      <tr>
+        <td>Inheritance</td>
+        <td>None · Heir inherits delta</td>
+        <td>None</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="fineprint">Changes that are not the default block achievements, the way vanilla's own domain-limit rule does.</p>
+</section>
+
+<section class="panel caveats">
+  <h2>Known issues, honestly</h2>
+  <ul>
+    <li><strong>Not validated in game yet.</strong> The scripted core is written and passes static checks; Milestone 1 is the go/no-go gate.</li>
+    <li><strong>Some governments clamp.</strong> A ruler whose government sets <code>domain_limit_max</code> may ignore a raised limit. Nomads, Mandala, Wanua, Ritsuryo and Soryo are the ones to watch.</li>
+    <li><strong>No slider.</strong> The interface is buttons and presets on purpose — passing an arbitrary number from GUI to script is a spike, not a promise.</li>
+    <li><strong>Multiplayer unsupported</strong> until tested. Back up saves before first use.</li>
+  </ul>
+  <p class="lede">
+    Before uninstalling mid-campaign, open the menu and use <strong>Clear every override in the world</strong>.
+  </p>
+</section>
+
+<section class="panel closing">
+  <img src="https://img.icons8.com/?id=12566&format=png&size=128" alt="" width="56" height="56">
+  <h2>Take the realm in hand</h2>
+  <p class="lede">Source, issues, research notes and the full specification live on GitHub.</p>
+  <nav class="hero-actions">
+    <a class="btn btn-gold" href="https://github.com/JoeyHammoth/Domainwright">Repository</a>
+    <a class="btn btn-ink" href="https://github.com/JoeyHammoth/Domainwright/blob/main/SPEC.md">The spec</a>
+    <a class="btn btn-ink" href="https://github.com/JoeyHammoth/Domainwright/wiki">Wiki</a>
+  </nav>
+</section>
+
+</main>
+
+<footer>
+  <p>Domainwright is an unofficial mod. Crusader Kings III is a trademark of Paradox Interactive. Not endorsed by Paradox.</p>
+  <p>Code under the <a href="https://github.com/JoeyHammoth/Domainwright/blob/main/LICENSE">MIT licence</a>. Icons by <a href="https://icons8.com">Icons8</a>.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
