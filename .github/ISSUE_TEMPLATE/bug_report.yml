@@ -1,0 +1,62 @@
+name: Bug report
+description: Something in Domainwright behaves incorrectly in game
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not attach vanilla game files.** Describe them by path and line instead.
+
+        A screenshot of the domain-limit tooltip is the single most useful attachment.
+  - type: input
+    id: game-version
+    attributes:
+      label: Game version
+      description: From the launcher, e.g. 1.20.1.1
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: Mod version
+      description: The release tag or commit you installed
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Right-click a count-tier AI ruler
+        2. Choose Domain Limit…
+        3. Click +5 twice
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: Include the natural limit, the delta you set, and what the tooltip showed.
+    validations:
+      required: true
+  - type: input
+    id: government
+    attributes:
+      label: Target's government and tier
+      description: Important — strict governments clamp the limit.
+  - type: textarea
+    id: log
+    attributes:
+      label: error.log lines naming a dlc_ identifier
+      description: Paste only those lines from `logs/error.log`.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have not included any vanilla game files or full log dumps.
+          required: true
+        - label: I searched existing issues for the same behaviour.
+          required: true

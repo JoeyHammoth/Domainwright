@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Design and plan
+    url: https://github.com/JoeyHammoth/Domainwright/blob/main/SPEC.md
+    about: The authoritative spec — read this before proposing a feature.
+  - name: Game internals notes
+    url: https://github.com/JoeyHammoth/Domainwright/tree/main/docs
+    about: What the installed game files actually do, with citations.
+  - name: Security report
+    url: https://github.com/JoeyHammoth/Domainwright/security/advisories/new
+    about: Report credential, CI or runner issues privately, never in a public issue.
