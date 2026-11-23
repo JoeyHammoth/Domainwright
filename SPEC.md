@@ -42,7 +42,7 @@ The core idea is that the game computes domain limit from character modifiers. I
 | Are there known pitfalls with domain-limit mods? | Yes. See below. |
 | Is there a path from a GUI button to a script effect? | Yes. Scripted GUIs define `scope`, `is_shown`, `is_valid` and `effect` blocks. A GUI calls them with `Execute`, `IsValid` and `IsShown` (plus tooltip variants). The ck3-tiger validator's source shows the expected call shape: a `GuiScope.SetRoot(...)` chain, optional `AddScope`, ending in `End`. |
 | Can a GUI read a mod's own variables? | Yes. A community snippet reads a script variable inside GUI with `GetPlayer.MakeScope.Var('name').GetValue`. |
-| Is there a ready-made slider widget for mods? | **Not confirmed.** Needs a spike (section 3.7). |
+| Is there a ready-made slider widget for mods? | **Drawn, yes; wired, no.** Every `slider` in vanilla is the draggable part of a scrollbar bound to an engine setting or the music player, no value-change callback exists, and GUI code cannot write a script variable. Closed in section 3.7. |
 | Did the domain-limit rules change recently? | Yes. Patch 1.19 reworked them (stewardship removed, education added, regencies no longer add), and several governments use stricter rules (section 2.1). |
 | Can the game's update be detected automatically? | Yes, via SteamCMD `app_info_print` build id (section 8). |
 | Can CI validate CK3 mods? | Yes, using `ck3-tiger`, but it needs vanilla game files, which cannot be published (section 8). |
@@ -168,6 +168,27 @@ Using the mod should be documented as disabling achievements (see section 5, Kno
 ### 3.7 Slider spike (decision gate)
 
 Goal: decide whether a true slider is worth shipping.
+
+**Verdict against build 1.20.1.1: closed — a slider cannot carry a number into script.** The spike was run as a
+reading task; the evidence is:
+
+- Sliders are drawable. `slider` blocks exist throughout vanilla GUI, for example
+  `gui/settings/setting_types.gui:277` and `gui/jomini/music_player/music_player_view.gui:197`.
+- Every one of them is a **scrollbar part**, not a general value control. The settings slider is bound to the
+  engine with `value = "[PdxValueSetting.GetValue(PdxSetting.GetSetting)]"`
+  (`gui/settings/setting_types.gui:268-269`); the music player's drives playback. Neither is available to mod
+  scripting.
+- There is **no value-change callback**: a grep of `gui/` for `on_value_changed`, `value_changed`, `min_value`
+  and `max_value` returns nothing, so a drag cannot even notify script, let alone pass a number.
+- There is **no GUI-to-script write**: `gui/` contains no `SetVariable`; conversely GUI reads `Var('name')`
+  (`gui/activity_window_widgets/chariot_race_widget_types.gui:56`), so the channel is script-to-GUI only.
+- `Execute` takes scopes, not numbers: `GetScriptedGui('key').Execute( GuiScope.SetRoot( ... ).End )`
+  (`gui/activity_window_widgets/funeral_deceased_selection_button.gui:27`). No vanilla call passes a numeric
+  argument.
+
+A "slider" can therefore only be a row of discrete positions drawn to look continuous, which is the shipped
+button UI with extra steps. The gate is closed: buttons and presets are the interface by design. Reopen only if
+an engine build adds a value-change callback or a GUI write.
 
 1. Search vanilla `gui` files for draggable value controls (for example in game settings or character creation) and read their definitions plus the `.info` and data-type dumps for the property names. [Verify such controls exist and are usable from mods]
 2. Prototype a test window where dragging changes a GUI-local value.
@@ -568,7 +589,7 @@ Recommendation: do the first Workshop upload by hand, confirm it works, and only
 | Risk / question | Mitigation / next step |
 | --- | --- |
 | Hard caps or special rules override modifier-based limits for some rulers | Milestone 1 gate; document exceptions |
-| Slider widget not available to mods, or no way to pass an arbitrary number from GUI to script | Ship button UI; slider is a stretch goal gated by the spike in 3.7 |
+| Slider widget not available to mods, or no way to pass an arbitrary number from GUI to script | **Closed in 3.7:** sliders are scrollbar parts bound to engine settings, no value-change callback exists, and GUI cannot write a script variable. Buttons are the interface by design. |
 | Domain-limit rules changed in 1.19 and a DLC patch may land around 2026-11-17 | Run Milestone 0 against the newest build; keep the delta design; re-verify section 2.1 numbers from game files |
 | Natural or effective limit not readable from script | Delta-only v1; compute limit in GUI or defer absolute-target mode |
 | No clean way to open a scripted widget on demand | Layer 1 event menu is the shipping fallback |
