@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Static checks
+        run: python3 tools/check_structure.py mod/
+
+      - name: Package the mod
+        run: bash tools/package.sh "${GITHUB_REF_NAME}"
+
+      - name: Verify the zip contains the descriptor at its root
+        run: |
+          python3 - <<'PY'
+          import sys, zipfile, os
+          zip_path = [f"dist/{f}" for f in os.listdir("dist") if f.endswith(".zip")][0]
+          with zipfile.ZipFile(zip_path) as archive:
+              names = archive.namelist()
+          if "descriptor.mod" not in names:
+              sys.exit("descriptor.mod is not at the root of the zip")
+          print(f"{zip_path}: {len(names)} entries, descriptor at root")
+          PY
+
+      - name: Publish the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
+          body: |
+            See [CHANGELOG.md](https://github.com/JoeyHammoth/Domainwright/blob/main/CHANGELOG.md) for what changed.
+
+            Unzip so that `descriptor.mod` sits at the root of a folder inside your CK3 `mod/` directory, then
+            enable **Domainwright** in the launcher's Mods tab.

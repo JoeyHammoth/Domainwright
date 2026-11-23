@@ -1,0 +1,81 @@
+name: watch-game-update
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install steamcmd
+        run: |
+          sudo add-apt-repository -y multiverse
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          echo steamcmd steam/question select "I AGREE" | sudo debconf-set-selections
+          sudo apt-get install -y steamcmd
+
+      - name: Read current public build id
+        id: build
+        run: bash tools/check_steam_build.sh 1158310 public >> "$GITHUB_OUTPUT"
+
+      - name: Compare with the last verified build
+        id: cmp
+        run: |
+          known="$(cat .github/known_build.txt)"
+          echo "known=${known}" >> "$GITHUB_OUTPUT"
+          if [ "${known}" != "${{ steps.build.outputs.buildid }}" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open an issue when the game updated
+        if: steps.cmp.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        env:
+          BUILDID: ${{ steps.build.outputs.buildid }}
+          KNOWN: ${{ steps.cmp.outputs.known }}
+        with:
+          script: |
+            const buildid = process.env.BUILDID;
+            const known = process.env.KNOWN;
+            const title = `Game build changed: ${buildid}`;
+
+            // Do not duplicate an open issue for the same build.
+            const open = await github.rest.issues.listForRepo({
+              ...context.repo,
+              state: "open",
+              labels: "game-update",
+            });
+            if (open.data.some((issue) => issue.title === title)) {
+              core.info(`Issue already open for build ${buildid}`);
+              return;
+            }
+
+            await github.rest.issues.create({
+              ...context.repo,
+              title,
+              labels: ["game-update"],
+              body: [
+                `Steam reports build \`${buildid}\` for app 1158310; the repository was verified against \`${known}\`.`,
+                "",
+                "## Response procedure",
+                "",
+                "- [ ] Run `validate.yml` on the self-hosted runner against the new build and fix new tiger reports.",
+                "- [ ] Run the runtime checklist in `tests/runtime/checklist.md`, at least R1–R9 and R16.",
+                "- [ ] Run a smoke subset of the AI protocol in `tests/ai/protocol.md`.",
+                "- [ ] Bump `.github/known_build.txt`, `supported_version` in `descriptor.mod` and `metadata.json`, and `CHANGELOG.md`.",
+                "- [ ] Tag a release.",
+                "",
+                "If something breaks, label this issue `breaking` and say so on the Workshop page before fixing.",
+              ].join("\n"),
+            });
