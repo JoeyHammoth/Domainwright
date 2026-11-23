@@ -1,0 +1,267 @@
+### Domainwright: scripted effects for the delta.
+###
+### Invariants:
+###   1. var:dlc_delta is the only persisted state (absent means 0).
+###   2. The set of ladder modifiers on a character is always exactly the bits of dlc_delta.
+###   3. Every effect here is safe to run repeatedly; none of them stack.
+
+### Strips every rung. Guarded so a character that never had an override logs nothing.
+dlc_clear_ladder_effect = {
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p1 }
+		remove_character_modifier = dlc_domain_limit_p1
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p2 }
+		remove_character_modifier = dlc_domain_limit_p2
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p4 }
+		remove_character_modifier = dlc_domain_limit_p4
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p8 }
+		remove_character_modifier = dlc_domain_limit_p8
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p16 }
+		remove_character_modifier = dlc_domain_limit_p16
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p32 }
+		remove_character_modifier = dlc_domain_limit_p32
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_p64 }
+		remove_character_modifier = dlc_domain_limit_p64
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_n1 }
+		remove_character_modifier = dlc_domain_limit_n1
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_n2 }
+		remove_character_modifier = dlc_domain_limit_n2
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_n4 }
+		remove_character_modifier = dlc_domain_limit_n4
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_n8 }
+		remove_character_modifier = dlc_domain_limit_n8
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_n16 }
+		remove_character_modifier = dlc_domain_limit_n16
+	}
+	if = {
+		limit = { has_character_modifier = dlc_domain_limit_n32 }
+		remove_character_modifier = dlc_domain_limit_n32
+	}
+}
+
+### Rebuilds the ladder from var:dlc_delta.
+### Greedy over powers of two, so each integer in range has one minimal representation.
+dlc_apply_delta_effect = {
+	dlc_clear_ladder_effect = yes
+
+	if = {
+		limit = { exists = var:dlc_delta }
+
+		set_local_variable = {
+			name = dlc_remaining
+			value = var:dlc_delta
+		}
+
+		if = {
+			limit = { local_var:dlc_remaining < 0 }
+			change_local_variable = {
+				name = dlc_remaining
+				multiply = -1
+			}
+
+			if = {
+				limit = { local_var:dlc_remaining >= 32 }
+				add_character_modifier = dlc_domain_limit_n32
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 32
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 16 }
+				add_character_modifier = dlc_domain_limit_n16
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 16
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 8 }
+				add_character_modifier = dlc_domain_limit_n8
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 8
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 4 }
+				add_character_modifier = dlc_domain_limit_n4
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 4
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 2 }
+				add_character_modifier = dlc_domain_limit_n2
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 2
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 1 }
+				add_character_modifier = dlc_domain_limit_n1
+			}
+		}
+		else = {
+			if = {
+				limit = { local_var:dlc_remaining >= 64 }
+				add_character_modifier = dlc_domain_limit_p64
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 64
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 32 }
+				add_character_modifier = dlc_domain_limit_p32
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 32
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 16 }
+				add_character_modifier = dlc_domain_limit_p16
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 16
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 8 }
+				add_character_modifier = dlc_domain_limit_p8
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 8
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 4 }
+				add_character_modifier = dlc_domain_limit_p4
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 4
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 2 }
+				add_character_modifier = dlc_domain_limit_p2
+				change_local_variable = {
+					name = dlc_remaining
+					subtract = 2
+				}
+			}
+			if = {
+				limit = { local_var:dlc_remaining >= 1 }
+				add_character_modifier = dlc_domain_limit_p1
+			}
+		}
+	}
+}
+
+### Clamps, stores and applies. $VALUE$ may be a number or a script value block.
+dlc_set_delta_effect = {
+	set_local_variable = {
+		name = dlc_requested
+		value = $VALUE$
+	}
+
+	if = {
+		limit = { local_var:dlc_requested > 127 }
+		set_variable = {
+			name = dlc_delta
+			value = 127
+		}
+	}
+	else_if = {
+		limit = { local_var:dlc_requested < -63 }
+		set_variable = {
+			name = dlc_delta
+			value = -63
+		}
+	}
+	else_if = {
+		limit = { local_var:dlc_requested = 0 }
+		dlc_reset_effect = yes
+	}
+	else = {
+		set_variable = {
+			name = dlc_delta
+			value = local_var:dlc_requested
+		}
+	}
+
+	dlc_apply_delta_effect = yes
+}
+
+### Adds a step to the current delta. $VALUE$ is the step, e.g. 1 or -5.
+dlc_change_delta_effect = {
+	if = {
+		limit = { exists = var:dlc_delta }
+		dlc_set_delta_effect = {
+			VALUE = {
+				value = var:dlc_delta
+				add = $VALUE$
+			}
+		}
+	}
+	else = {
+		dlc_set_delta_effect = { VALUE = $VALUE$ }
+	}
+}
+
+### Clears one character's override.
+dlc_reset_effect = {
+	dlc_clear_ladder_effect = yes
+	remove_variable = dlc_delta
+}
+
+### Clears every override in the world. Expensive: run from the menu, never on a pulse.
+### Characters without var:dlc_delta are skipped, which is nearly all of them.
+dlc_reset_all_effect = {
+	every_living_character = {
+		limit = { exists = var:dlc_delta }
+		dlc_reset_effect = yes
+	}
+}
+
+### Succession inheritance, called from common/on_action/dlc_on_actions.txt.
+### Only does anything when the game rule asks for it.
+dlc_inherit_on_succession_effect = {
+	if = {
+		limit = { has_game_rule = dlc_inheritance_heir_inherits_delta }
+		if = {
+			limit = { exists = scope:dlc_predecessor }
+			if = {
+				limit = { scope:dlc_predecessor = { exists = var:dlc_delta } }
+				dlc_set_delta_effect = {
+					VALUE = scope:dlc_predecessor.var:dlc_delta
+				}
+			}
+		}
+	}
+}

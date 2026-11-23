@@ -1,0 +1,88 @@
+### Domainwright: Layer 2 bindings.
+###
+### Each entry is called from the .gui file with
+###   GetScriptedGui('key').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )
+### which the engine resolves against the root scope declared here. The window binds the
+### player, so is_valid checks the target rather than the actor: see
+### docs/game-internals.md section 5.
+
+dlc_sg_plus_one = {
+	scope = character
+
+	is_valid = {
+		dlc_target_is_editable_trigger = yes
+	}
+
+	effect = {
+		dlc_change_delta_effect = { VALUE = 1 }
+	}
+}
+
+dlc_sg_plus_five = {
+	scope = character
+
+	is_valid = {
+		dlc_target_is_editable_trigger = yes
+	}
+
+	effect = {
+		dlc_change_delta_effect = { VALUE = 5 }
+	}
+}
+
+dlc_sg_minus_one = {
+	scope = character
+
+	is_valid = {
+		dlc_target_is_editable_trigger = yes
+	}
+
+	effect = {
+		dlc_change_delta_effect = { VALUE = -1 }
+	}
+}
+
+dlc_sg_minus_five = {
+	scope = character
+
+	is_valid = {
+		dlc_target_is_editable_trigger = yes
+	}
+
+	effect = {
+		dlc_change_delta_effect = { VALUE = -5 }
+	}
+}
+
+dlc_sg_reset = {
+	scope = character
+
+	is_valid = {
+		dlc_target_is_editable_trigger = yes
+	}
+
+	effect = {
+		dlc_reset_effect = yes
+	}
+}
+
+### Opens and closes the custom window by toggling a variable the .gui file reads.
+### [Verify] the visibility expression; Milestone 3b owns this, and Layer 1 does not need it.
+dlc_sg_open_window = {
+	scope = character
+
+	effect = {
+		set_variable = {
+			name = dlc_window_open
+			value = yes
+		}
+	}
+}
+
+dlc_sg_close_window = {
+	scope = character
+
+	effect = {
+		remove_variable = dlc_window_open
+	}
+}

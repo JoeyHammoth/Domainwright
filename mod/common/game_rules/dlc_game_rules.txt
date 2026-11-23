@@ -1,0 +1,38 @@
+### Domainwright: game rules.
+###
+### Settings are read with the bare trigger `has_game_rule = <setting_key>`.
+### Non-default settings block achievements, matching vanilla's own domain-limit rule.
+
+dlc_access = {
+	categories = {
+		tweaks
+	}
+
+	default = dlc_access_anyone
+
+	dlc_access_anyone = {
+	}
+
+	dlc_access_player_only = {
+		flag = blocks_achievements
+	}
+
+	dlc_access_player_and_realm = {
+		flag = blocks_achievements
+	}
+}
+
+dlc_inheritance = {
+	categories = {
+		tweaks
+	}
+
+	default = dlc_inheritance_none
+
+	dlc_inheritance_none = {
+	}
+
+	dlc_inheritance_heir_inherits_delta = {
+		flag = blocks_achievements
+	}
+}

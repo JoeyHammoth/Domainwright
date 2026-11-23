@@ -1,0 +1,87 @@
+### Domainwright: Layer 2 window.
+###
+### Registered in gui/scripted_widgets/dlc_widgets.txt, so the engine creates it at startup
+### without any code reference. It stays hidden until an interaction sets
+### var:dlc_window_open on the player.
+###
+### [Verify] the visibility expression and the IsSet data function; the whole Layer 2 path is
+### Milestone 3b. Layer 1 (the event menu) is the shipping interface and does not depend on it.
+
+window = {
+	name = "dlc_domain_window"
+	size = { 460 320 }
+	parentanchor = center
+	layer = middle
+
+	visible = "[GetPlayer.MakeScope.Var('dlc_window_open').IsSet]"
+
+	using = Window_Background
+	using = Window_Decoration
+
+	vbox = {
+		using = Window_Margins
+
+		header_pattern = {
+			layoutpolicy_horizontal = expanding
+
+			blockoverride "header_text" {
+				text = "dlc_window_title"
+			}
+		}
+
+		text_single = {
+			text = "dlc_window_help"
+			autoresize = yes
+			max_width = 420
+		}
+
+		text_single = {
+			text = "dlc_window_delta_readout"
+			autoresize = yes
+		}
+
+		hbox = {
+			spacing = 8
+
+			button = {
+				size = { 84 40 }
+				onclick = "[GetScriptedGui('dlc_sg_minus_five').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "dlc_window_minus_five"
+			}
+
+			button = {
+				size = { 84 40 }
+				onclick = "[GetScriptedGui('dlc_sg_minus_one').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "dlc_window_minus_one"
+			}
+
+			button = {
+				size = { 84 40 }
+				onclick = "[GetScriptedGui('dlc_sg_plus_one').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "dlc_window_plus_one"
+			}
+
+			button = {
+				size = { 84 40 }
+				onclick = "[GetScriptedGui('dlc_sg_plus_five').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "dlc_window_plus_five"
+			}
+		}
+
+		hbox = {
+			spacing = 8
+
+			button = {
+				size = { 160 40 }
+				onclick = "[GetScriptedGui('dlc_sg_reset').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "dlc_window_reset"
+			}
+
+			button = {
+				size = { 160 40 }
+				onclick = "[GetScriptedGui('dlc_sg_close_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "dlc_window_close"
+			}
+		}
+	}
+}

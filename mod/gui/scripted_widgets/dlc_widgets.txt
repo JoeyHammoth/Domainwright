@@ -1,0 +1,4 @@
+### Domainwright: widget registration.
+### Format is one `gui path = widget name` pair per line; every file here is loaded.
+
+gui/dlc_domain_window.gui = dlc_domain_window
