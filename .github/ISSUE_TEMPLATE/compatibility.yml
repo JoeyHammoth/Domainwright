@@ -1,0 +1,44 @@
+name: Compatibility report
+description: A conflict with another mod, or a government whose limit ignores the override
+title: "[compat] "
+labels: ["compatibility", "needs-triage"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of report
+      options:
+        - UI mod conflict
+        - Overhaul / total conversion conflict
+        - Strict government ignores the override (nomadic, Mandala, Wanua, Ritsuryo, Soryo)
+        - Hard cap overrides the ladder
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: other-mod
+    attributes:
+      label: Affected mod and its version
+      description: Leave blank if this is a vanilla government.
+  - type: input
+    id: game-version
+    attributes:
+      label: Game version
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: What happens
+      description: Include load order and whether the conflict happens with only the other mod plus Domainwright enabled.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I reproduced it with only the two mods enabled, where possible.
+          required: true
+        - label: I have not included any vanilla game files.
+          required: true

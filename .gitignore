@@ -1,2 +1,17 @@
 .agents
 .env
+
+# Build output
+dist/
+*.zip
+
+# Local tooling
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+
+# ck3-tiger working files (the reviewed baseline itself is committed)
+tiger.dmp
