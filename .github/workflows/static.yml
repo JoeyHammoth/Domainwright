@@ -1,0 +1,20 @@
+name: static
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Structure and localization checks
+        run: python3 tools/check_structure.py mod/
+
+      - name: Package smoke test
+        run: bash tools/package.sh ci
