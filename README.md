@@ -70,13 +70,18 @@ harmless but invisible modifiers behind — see the runtime checklist for the ve
 
 - **Not yet validated in game.** Milestone 1 of [SPEC.md](SPEC.md) is the gate; until it passes, treat every
   behaviour above as designed rather than observed.
-- **`domain_limit_max` can beat the ladder.** Some governments hard-cap the limit
-  (`common/governments/00_government_types.txt` uses `domain_limit_max = 2`). On those rulers, raising the
-  limit may do nothing. Tracked in the strict-government issue.
+- **`domain_limit_max` can beat the ladder.** The cap is not rare: governments cap at 1-2
+  (`common/governments/00_government_types.txt:297,1056`, `01_japan_government_types.txt:47,125`), nomadic
+  authority laws fix the limit at 1-3 (`common/laws/00_realm_laws.txt:1804-2023`), and vanilla's extreme
+  conqueror modifier clamps to 5-15 (`common/modifiers/00_basic_modifiers.txt:696-697`). On those characters a
+  delta is clamped, not applied. Tracked in the strict-government issue; the full list is in
+  [`docs/ai-notes.md`](docs/ai-notes.md).
 - **Achievements.** Cheat-style edits are expected to block achievements; the mod applies
   `blocks_achievements` to its game rule the way vanilla's domain-limit tweak rule does.
 - **Multiplayer** is unsupported until tested.
-- **Slider** is not shipped. The interface is button-driven on purpose; see SPEC §3.7.
+- **No slider, and not by omission.** Vanilla's sliders are scrollbar parts bound to engine settings, no
+  value-change callback exists, and GUI code cannot write a script variable — so a dragged number has no route
+  into script. Verified against 1.20.1.1; see SPEC §3.7. The buttons are the interface.
 
 ## Repository map
 
