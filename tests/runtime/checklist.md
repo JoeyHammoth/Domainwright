@@ -37,8 +37,22 @@ effect = { dlc_reset_effect = yes }
 | R16 | Strict-limit governments (nomadic, Mandala, Wanua, Ritsuryo, Soryo) | Works as intended, or the UI warns clearly | |
 | R17 | Tooltips | Each rung appears as a named line in the domain-limit tooltip | |
 
+## Verdict rules
+
+The go/no-go decision for Milestone 1 reads the tier, not the tally: a run with failures can still be a go.
+
+| Tier | Rows | A failure means |
+| --- | --- | --- |
+| Fatal | R1, R3, R4, R7 | **No-go.** The ladder or its persistence is wrong; revise SPEC section 3 before writing more script. |
+| Fixable | R5, R6, R10, R12, R13, R14, R15, R17 | **Go**, with a follow-up issue naming the fix. The mechanism stands and the defect is local. |
+| Report | R2, R8, R9, R11, R16 | **Never blocks.** These record vanilla behaviour and compatibility, not our correctness. Record what happened. |
+
+A skipped fatal row is not a pass: if any fatal row is skipped the run is **incomplete** and the gate stays shut.
+
+`tools/run_checklist.sh` walks this list, applies these tiers and writes the report to `tests/runtime/runs/`.
+
 ## Recorded runs
 
 | Date | Build id | Mod version | Passed | Notes |
 | --- | --- | --- | --- | --- |
-| — | — | 0.1.0-dev | none yet | Not yet run in game. |
+| — | — | 0.1.0-dev | none yet | Not yet run in game. Reports go in `tests/runtime/runs/`. |
