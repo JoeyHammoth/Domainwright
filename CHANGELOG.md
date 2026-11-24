@@ -24,8 +24,15 @@ All notable changes to Domainwright are recorded here. The format follows
   ck3-tiger baseline, a Steam build-id watcher and a tagged release packager.
 - Repository documentation: research notes in `docs/`, a runtime checklist, an AI behaviour protocol, the
   GitHub Pages site, and the wiki.
+- A cap warning in the menu for characters whose government can clamp the computed limit, keyed off
+  `government_uses_domain_limit` rather than a list of government names.
+- `tools/run_checklist.sh`, which walks the runtime checklist, prints the console line for each row, applies the
+  fatal / fixable / report tiers and writes a report to `tests/runtime/runs/`.
 
 ### Changed
+
+- The cap predicate is negated: `government_uses_domain_limit` is true for governments that do *not* cap, so the
+  warning fires on its absence (`government_has_flag` is the trigger that reads it).
 
 - The touch-point ledger is complete: all 224 `domain_limit` hits in build 1.20.1.1 are classified in
   `docs/ai-notes.md`, and the caps that can clamp the ladder are now listed by file and line.

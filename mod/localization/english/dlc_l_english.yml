@@ -6,6 +6,7 @@
  # Layer 1 menu
  dlc_menu.0001.t:0 "The Domain Wright"
  dlc_menu.0001.desc_no_delta:0 "[ROOT.Char.GetTitledFirstName] holds [ROOT.Char.GetDomainSize] [holdings|E] against a natural [domain_limit|E] of [ROOT.Char.GetDomainLimit].\n\nNo override is in place. Each rung you add is an ordinary [domain_limit|E] modifier, so the penalties, the tooltip and the AI all read it as real."
+ dlc_menu.0001.desc_capped:0 "#EMP This government caps the [domain_limit|E].#! Its own rules set a ceiling on the computed limit, so rungs above that ceiling will not appear. The override is still applied and is still real; it is simply outranked."
  dlc_menu.0001.desc_with_delta:0 "[ROOT.Char.GetTitledFirstName] holds [ROOT.Char.GetDomainSize] [holdings|E]. The override is #high [ROOT.Char.MakeScope.Var('dlc_delta').GetValue|0]#! on top of the natural limit.\n\nEach rung is an ordinary [domain_limit|E] modifier: the tooltip lists it, the over-limit penalties count it, and the AI acts on it."
  dlc_menu.0001.minus_five:0 "Lower the limit by #EMP 5#!"
  dlc_menu.0001.minus_one:0 "Lower the limit by #EMP 1#!"
