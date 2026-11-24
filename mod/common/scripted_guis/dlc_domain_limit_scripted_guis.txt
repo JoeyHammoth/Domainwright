@@ -67,7 +67,9 @@ dlc_sg_reset = {
 }
 
 ### Opens and closes the custom window by toggling a variable the .gui file reads.
-### [Verify] the visibility expression; Milestone 3b owns this, and Layer 1 does not need it.
+### The `scope = character` + `effect` shape matches vanilla's smallest scripted GUI
+### (common/scripted_guis/00_character.txt:1-7). What Milestone 3b has to prove is the window's
+### lifetime, not the call shape; Layer 1 does not use these.
 dlc_sg_open_window = {
 	scope = character
 

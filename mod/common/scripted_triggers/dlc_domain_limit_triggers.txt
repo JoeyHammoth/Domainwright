@@ -35,3 +35,18 @@ dlc_actor_may_edit_recipient_trigger = {
 		}
 	}
 }
+
+### True when the character's government can clamp the effective limit, making the upper
+### rungs inert. `government_uses_domain_limit` is a government flag declared in each
+### government's `flags = { }` block (common/governments/00_government_types.txt:34 and
+### elsewhere), and its vanilla comment defines it as true for governments that do NOT use
+### `domain_limit_max` or that hold no land. So the cap risk is the flag's *absence*;
+### landless rulers are already excluded because the flag is true for them.
+###
+### Capped in 1.20.1.1: nomadic authority laws set 1-3, Ritsuryo and Soryo sit at 1-2 and are
+### raised only by the Japanese manor, Mandala and Wanua cap at 1 and are raised by their own
+### buildings, and two governments cap at 2 outright (00_government_types.txt:297 and :1056).
+### Warn rather than clamp: the ladder is not wrong there, it is outranked.
+dlc_government_may_cap_limit_trigger = {
+	NOT = { government_has_flag = government_uses_domain_limit }
+}

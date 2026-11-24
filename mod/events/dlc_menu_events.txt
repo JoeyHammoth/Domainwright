@@ -16,6 +16,11 @@ dlc_menu.0001 = {
 	}
 
 	desc = {
+		### Shown before the readout so a clamped ruler is told first, not last.
+		triggered_desc = {
+			trigger = { dlc_government_may_cap_limit_trigger = yes }
+			desc = dlc_menu.0001.desc_capped
+		}
 		triggered_desc = {
 			trigger = { exists = var:dlc_delta }
 			desc = dlc_menu.0001.desc_with_delta
@@ -62,7 +67,9 @@ dlc_menu.0001 = {
 		trigger_event = dlc_menu.0001
 	}
 
-	### Layer 2: opens the custom window. [Verify] the widget's visibility expression.
+	### Layer 2: opens the custom window. The visibility expression's `Var(...).IsSet` shape is copied
+### from gui/window_activity.gui:1816; what is unverified is the widget's startup lifetime, not the
+### syntax. Milestone 3b owns it.
 	option = {
 		name = dlc_menu.0001.open_window
 		dlc_sg_open_window = yes

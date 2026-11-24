@@ -114,10 +114,17 @@ limit, in the same family as `vassal_limit_max`.
 | `common/confederation_types/10_house_bloc_types.txt:386` | leading house head: max 1 | Confederation leaders are capped. |
 | `common/buildings/tgp_great_project_buildings.txt:60,156,253,351,448` | max 1, 2, 3, 5, 7 by tier | Great projects raise the cap with their own add; the effective ceiling is the cap, not the sum. |
 
-Reading the government files together: `government_uses_domain_limit` is a flag meaning "this government does not
-use `domain_limit_max`" (`common/lifestyle_perks/00_intrigue_3_intimidation_tree_perks.txt:220` says so in a
-comment). So the capping governments are exactly the ones *without* that flag — which is a testable predicate for
-the warning in issue #8, better than a hardcoded list of five names.
+Reading the government files together: `government_uses_domain_limit` is a **government flag**, declared inside each
+government's `flags = { }` block (`common/governments/00_government_types.txt:34,86,162,235,539,892,1211,1337`,
+`02_theocratic_government_types.txt:44,136`) and read with the `government_has_flag` trigger. Its vanilla comment
+(`common/lifestyle_perks/00_intrigue_3_intimidation_tree_perks.txt:220`) defines it as true for governments that do
+not use `domain_limit_max` **or that hold no land**. So the capping governments are exactly the ones *without* the
+flag, and landless rulers are already excluded by the flag's own definition.
+
+The predicate is therefore `NOT = { government_has_flag = government_uses_domain_limit }` — note the trigger name and
+the negation. (An earlier draft of the #8 comment had both wrong: it named a non-existent `has_government_flag` and
+claimed the flag was *true* for capped governments.) It is implemented as `dlc_government_may_cap_limit_trigger`
+and drives the menu warning; R8 and R16 are what confirm it per government.
 
 ## 4. Irrelevant (UI, loc, docs, comments)
 
@@ -144,9 +151,9 @@ the warning in issue #8, better than a hardcoded list of five names.
 2. **Caps are the real failure mode, and they are structural.** Nomadic rulers have their limit set by realm law
    (1-3), Japan by government plus manor (2), Mandala and Wanua at 1-2, extreme conquerors 5-15. On those
    characters the ladder is not "wrong", it is clamped — so the UI must warn rather than lie (issue #8).
-3. **One predicate names them:** `has_government_flag = government_uses_domain_limit` is false exactly for the
-   governments that cap, per the comment at `00_intrigue_3_intimidation_tree_perks.txt:220`. Verify per government
-   in game before relying on it (R8/R16).
+3. **One predicate names them:** `NOT = { government_has_flag = government_uses_domain_limit }` is true exactly for
+   the governments that cap, per the comment at `00_intrigue_3_intimidation_tree_perks.txt:220`. It ships as
+   `dlc_government_may_cap_limit_trigger`; the flag's per-government truth still needs R8/R16 to confirm.
 4. **Range choice is still sound:** -63..+127 is expressible, and clamping at the top of the ladder is only
    visible where a cap is lower than that.
 
