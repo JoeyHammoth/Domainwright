@@ -1,0 +1,70 @@
+﻿### Domainwright: the delta as script values.
+###
+### These exist because of one engine contract. While an event option or an interaction is on
+### screen the game dry-runs the effects behind it to build the tooltip, and that pass
+### evaluates every `limit` - including the limits of effects it reaches through
+### `trigger_event`, `hidden_effect` and `show_as_tooltip`. It executes nothing, so a variable
+### a preceding effect was supposed to set is still unset there, and a limit that reads it logs
+### an error on every refresh.
+###
+### A `limit` may therefore not read `var:dlc_delta` (or any local variable) directly. Every
+### trigger below tests one of these script values instead. The only variable access left is
+### behind `exists = var:dlc_delta`, which is safe: an existence check on an absent variable is
+### false rather than an error, in the describe pass and at runtime alike.
+###
+### `modulo` is a script-value operator in this build (common/script_values/_script_values.info:25,
+### example at 01_dynamic_values.txt:1204).
+
+### The delta itself. Zero when the character has no override.
+dlc_delta_value = {
+	if = {
+		limit = { exists = var:dlc_delta }
+		value = var:dlc_delta
+	}
+}
+
+### The magnitude, so the seven bits below need no sign test of their own.
+dlc_delta_size_value = {
+	value = dlc_delta_value
+	if = {
+		limit = { dlc_delta_value < 0 }
+		multiply = -1
+	}
+}
+
+### One value per rung: the bit of `size` at 2, 4, 8 ... 128. A rung is set when the value is
+### at least the rung's weight, e.g. bit8 >= 8.
+dlc_delta_bit1_value = {
+	add = dlc_delta_size_value
+	modulo = 2
+}
+
+dlc_delta_bit2_value = {
+	add = dlc_delta_size_value
+	modulo = 4
+}
+
+dlc_delta_bit4_value = {
+	add = dlc_delta_size_value
+	modulo = 8
+}
+
+dlc_delta_bit8_value = {
+	add = dlc_delta_size_value
+	modulo = 16
+}
+
+dlc_delta_bit16_value = {
+	add = dlc_delta_size_value
+	modulo = 32
+}
+
+dlc_delta_bit32_value = {
+	add = dlc_delta_size_value
+	modulo = 64
+}
+
+dlc_delta_bit64_value = {
+	add = dlc_delta_size_value
+	modulo = 128
+}

@@ -1,14 +1,23 @@
-### Domainwright: the Layer 1 entry point.
+﻿### Domainwright: the Layer 1 entry point.
 ###
 ### The engine's own interaction format: category is required, desc must be localized,
 ### on_accept runs in actor scope with scope:recipient available.
 ### The effect fires the menu event on the recipient, so the event's root is the character
 ### being edited while the actor stays reachable through the saved scope.
+###
+### This on_accept is described whenever the interaction is listed, and the describe pass
+### follows `trigger_event` into the menu event and walks its immediate. That is why nothing
+### reachable from here may read a variable in a `limit`: the pass evaluates limits but
+### executes nothing, so the variable is not set yet. The ladder is built to that rule.
+###
+### No `target_type`: character is the default target and must be left implicit. Declaring
+### `target_type = character` is rejected in 1.20.1.1 -
+### "'character' is not a valid entry ... (valid: title, artifact, men_at_arms, court_position_type)".
+### Only those four need the key at all.
 
 dlc_domain_limit_interaction = {
 	category = interaction_category_vassal
 	common_interaction = yes
-	target_type = character
 	interface_priority = 10
 
 	desc = dlc_domain_limit_interaction_desc

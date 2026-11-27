@@ -1,4 +1,4 @@
-### Domainwright: Layer 2 bindings.
+﻿### Domainwright: Layer 2 bindings.
 ###
 ### Each entry is called from the .gui file with
 ###   GetScriptedGui('key').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )

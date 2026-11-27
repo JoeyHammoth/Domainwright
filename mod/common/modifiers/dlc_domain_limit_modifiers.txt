@@ -1,4 +1,4 @@
-### Domainwright: the domain_limit ladder.
+﻿### Domainwright: the domain_limit ladder.
 ###
 ### A vanilla character modifier cannot take a runtime value, so an arbitrary delta is
 ### expressed as a sum of powers of two. dlc_apply_delta adds exactly the rungs that sum

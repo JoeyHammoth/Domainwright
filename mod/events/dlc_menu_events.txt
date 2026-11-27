@@ -1,4 +1,4 @@
-namespace = dlc_menu
+﻿namespace = dlc_menu
 
 ### Domainwright: the Layer 1 menu.
 ###
@@ -6,6 +6,23 @@ namespace = dlc_menu
 ### being edited and scope:dlc_actor is the player who opened it. Every option applies the
 ### delta through the same scripted effect and then re-fires the event, which is how the
 ### readout refreshes without any GUI code.
+###
+### The engine dry-runs an option's effects while the option is on screen, to build its
+### tooltip. That pass evaluates every `limit` in the effects it reaches - including through
+### `hidden_effect`, `show_as_tooltip` and `trigger_event` - and executes none of them. So no
+### reachable `limit` may read a variable: while the option is being described the variable is
+### not set yet, which logged three errors per refresh ("Failed to fetch variable", "Event
+### target link 'local_var' returned an unset scope", "Invalid left side during comparison
+### 'local_var'") - 47,817 lines in one session, then 249 more once the walk reached this
+### event through the interaction's on_accept. The delta's limits read script values instead
+### (common/script_values/dlc_domain_limit_values.txt), and the walk is clean: a full session
+### on 2026-11-27 produced no error naming a dlc_ identifier.
+###
+### An earlier version had each option only record its step in var:dlc_pending and re-fire this
+### event, applying the step in the immediate. That pass was clean, but the hand-off did not
+### complete: after the same session the save held dlc_pending on three characters, with no
+### dlc_delta and no ladder modifier anywhere in it. The effects are describe-safe now, so each
+### option applies its step directly and the re-fire is only for the readout.
 
 dlc_menu.0001 = {
 	type = character_event
@@ -67,13 +84,10 @@ dlc_menu.0001 = {
 		trigger_event = dlc_menu.0001
 	}
 
-	### Layer 2: opens the custom window. The visibility expression's `Var(...).IsSet` shape is copied
-### from gui/window_activity.gui:1816; what is unverified is the widget's startup lifetime, not the
-### syntax. Milestone 3b owns it.
-	option = {
-		name = dlc_menu.0001.open_window
-		dlc_sg_open_window = yes
-	}
+	### Layer 2's window option is withheld: a scripted GUI is not callable as an effect.
+	### `dlc_sg_open_window = yes` here produced "Unknown effect: dlc_sg_open_window" in
+	### 1.20.1.1, so the window has no entry point until Milestone 3b finds a real one.
+	### The scripted GUIs and the .gui file stay in the mod; only this call goes.
 
 	option = {
 		name = dlc_menu.0001.close

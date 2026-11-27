@@ -1,4 +1,4 @@
-### Domainwright: Layer 2 window.
+﻿### Domainwright: Layer 2 window.
 ###
 ### Registered in gui/scripted_widgets/dlc_widgets.txt, so the engine creates it at startup
 ### without any code reference. It stays hidden until an interaction sets

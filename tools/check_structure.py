@@ -42,10 +42,13 @@ FORBIDDEN_OVERRIDES = {
 # vanilla on_action hooks this mod deliberately extends. Extending a hook is additive
 # and is the only way to react to a vanilla event; adding to this set needs a comment
 # in the PR explaining why no dlc_-prefixed key can do the job.
+# on_death is deliberately absent: vanilla declares it with an `effect` block, and a second
+# definition replaces that block instead of merging, so hooking it silently deletes vanilla
+# behaviour. Only on_title_gain_inheritance is additive, because vanilla declares `events`
+# there and gives mods the `effect` slot.
 ALLOWED_TOP_LEVEL_KEYS = {
     "namespace",
     "on_title_gain_inheritance",
-    "on_death",
 }
 
 KEY_RE = re.compile(r'^\s*([A-Za-z0-9_.\-]+)\s*=\s*\{')
@@ -148,6 +151,19 @@ def script_files(mod: Path) -> list[Path]:
     return files
 
 
+def lexed_files(mod: Path) -> list[Path]:
+    """Every file the game's lexer reads, script and GUI alike.
+
+    The engine wants a UTF-8 BOM on all of them; without one it writes
+    "should be in utf8-bom encoding" to error.log for the file, which alone fails R12.
+    """
+    files = script_files(mod)
+    gui = mod / "gui"
+    if gui.is_dir():
+        files.extend(p for p in gui.rglob("*") if p.is_file() and p.suffix in {".gui", ".txt"})
+    return files
+
+
 def check_prefix(mod: Path, report: Report) -> None:
     """Every top-level definition the mod creates must be namespaced.
 
@@ -190,6 +206,35 @@ def check_events(mod: Path, report: Report) -> None:
         for event_id in re.findall(r"^\s*(" + re.escape(ns) + r"\.\d+)\s*=\s*\{", text, re.MULTILINE):
             if event_id.count(".") != 1:
                 report.error(f"{rel}: suspicious event id '{event_id}'")
+
+
+VARIABLE_EFFECT_RE = re.compile(
+    r"(?:set_variable|change_variable|set_local_variable|change_local_variable|"
+    r"set_variable_list|add_to_variable_list|remove_from_variable_list)\s*=\s*\{"
+)
+
+
+def variable_block_lines(lines: list[str]) -> set[int]:
+    """Zero-based indices of the lines inside a variable-assignment block.
+
+    Such a block carries its own `name =` key, which names a variable rather than a
+    localization entry, so the option-name scan has to skip those lines.
+    """
+    inside: set[int] = set()
+    start: int | None = None
+    depth = 0
+    for index, line in enumerate(lines):
+        stripped = line.split("#", 1)[0]
+        if start is None and VARIABLE_EFFECT_RE.search(stripped):
+            start = index
+        if start is not None:
+            depth += stripped.count("{") - stripped.count("}")
+            if index > start:
+                inside.add(index)
+            if depth <= 0:
+                start = None
+                depth = 0
+    return inside
 
 
 def check_localization(mod: Path, report: Report) -> None:
@@ -240,7 +285,11 @@ def check_localization(mod: Path, report: Report) -> None:
     # Event option names and interaction names must exist.
     for path in sorted((mod / "events").rglob("*.txt")) if (mod / "events").is_dir() else []:
         text = read_text(path, report)
-        for number, line in enumerate(text.splitlines(), start=1):
+        lines = text.splitlines()
+        skip = variable_block_lines(lines)
+        for number, line in enumerate(lines, start=1):
+            if number - 1 in skip:
+                continue
             match = re.match(r"\s*(name|title|desc)\s*=\s*([A-Za-z0-9_.]+)\s*$", line)
             if match and not match.group(2).startswith("["):
                 key = match.group(2)
@@ -249,12 +298,13 @@ def check_localization(mod: Path, report: Report) -> None:
 
 
 def check_encoding(mod: Path, report: Report) -> None:
-    for path in script_files(mod):
+    for path in lexed_files(mod):
+        rel = path.relative_to(mod).as_posix()
         raw = path.read_bytes()
         if b"\r\n" in raw:
-            report.warn(f"{path.relative_to(mod).as_posix()}: contains CRLF line endings")
-        if raw.startswith(b"\xef\xbb\xbf"):
-            report.warn(f"{path.relative_to(mod).as_posix()}: starts with a BOM (not expected in script files)")
+            report.warn(f"{rel}: contains CRLF line endings")
+        if not raw.startswith(b"\xef\xbb\xbf"):
+            report.error(f"{rel}: missing UTF-8 BOM (the engine logs a lexer error per file)")
 
 
 def main() -> int:

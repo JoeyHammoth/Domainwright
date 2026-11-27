@@ -1,4 +1,4 @@
-### Domainwright: triggers shared by the interaction, the menu and the window.
+﻿### Domainwright: triggers shared by the interaction, the menu and the window.
 
 ### Root: the character whose limit would be edited.
 ### Alive is the only hard requirement; everything else is access policy, checked by the
@@ -15,22 +15,43 @@ dlc_has_override_trigger = {
 
 ### Root: the acting character (the interaction's actor). scope:recipient is the target.
 ### Implements the dlc_access game rule.
+###
+### The settings are spelled out as a flat OR rather than an if/else_if chain: `else_if` is
+### not a valid key inside a scripted trigger. 1.20.1.1 reports
+### "Unknown trigger: else_if" and then discards the whole trigger, which made the
+### interaction permanently invalid.
+###
+### Every branch tests the target alone - never the actor. `root` is not the actor in the
+### pass that builds the interaction's failure tooltips, and comparing against it there
+### produced "Event target link 'root' returned an unset scope" 99,729 times in one
+### session. In single-player the three settings reduce to a property of the target:
+### anyone, the player, or the player plus their realm.
+###
+### "Is the player" is spelled `is_ai = no`. `is_player` is not a trigger in 1.20.1.1: at
+### load the engine reports "Unknown trigger: is_player" and substitutes false, which left
+### the player_only and player_and_realm settings matching nobody while the default rule
+### kept working and hid the fault.
 dlc_actor_may_edit_recipient_trigger = {
 	scope:recipient = { is_alive = yes }
 
-	if = {
-		limit = { has_game_rule = dlc_access_player_only }
-		this = scope:recipient
-	}
-	else_if = {
-		limit = { has_game_rule = dlc_access_player_and_realm }
-		OR = {
-			this = scope:recipient
-			scope:recipient = { top_liege ?= scope:actor }
-			scope:recipient ?= { top_liege ?= scope:actor }
-			AND = {
-				exists = scope:recipient.top_liege
-				scope:recipient.top_liege ?= this
+	OR = {
+		has_game_rule = dlc_access_anyone
+
+		AND = {
+			has_game_rule = dlc_access_player_only
+			scope:recipient = { is_ai = no }
+		}
+
+		AND = {
+			has_game_rule = dlc_access_player_and_realm
+			scope:recipient = {
+				OR = {
+					is_ai = no
+					AND = {
+						exists = top_liege
+						top_liege = { is_ai = no }
+					}
+				}
 			}
 		}
 	}

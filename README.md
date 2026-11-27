@@ -68,8 +68,10 @@ harmless but invisible modifiers behind — see the runtime checklist for the ve
 
 ## Known issues
 
-- **Not yet validated in game.** Milestone 1 of [SPEC.md](SPEC.md) is the gate; until it passes, treat every
-  behaviour above as designed rather than observed.
+- **Only the log-level gate has been observed.** A live session on 1.20.1.1 loads, opens the menu and quits
+  with no error naming a `dlc_` identifier (R12; report in [`tests/runtime/runs/`](tests/runtime/runs/)), but
+  the ladder's visible effect (R1, R3, R4, R7) is still designed rather than observed. Milestone 1 of
+  [SPEC.md](SPEC.md) remains the gate.
 - **`domain_limit_max` can beat the ladder.** The cap is not rare: governments cap at 1-2
   (`common/governments/00_government_types.txt:297,1056`, `01_japan_government_types.txt:47,125`), nomadic
   authority laws fix the limit at 1-3 (`common/laws/00_realm_laws.txt:1804-2023`), and vanilla's extreme

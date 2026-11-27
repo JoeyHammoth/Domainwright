@@ -31,6 +31,11 @@ All notable changes to Domainwright are recorded here. The format follows
 
 ### Changed
 
+- The ladder is rebuilt from script values instead of a greedy remainder loop: thirteen independent bit tests
+  over the new `common/script_values/dlc_domain_limit_values.txt`, and no local variable anywhere in the mod.
+- Delta options apply their step directly. The `var:dlc_pending` hand-off and the event `immediate` that
+  consumed it are gone.
+
 - The cap predicate is negated: `government_uses_domain_limit` is true for governments that do *not* cap, so the
   warning fires on its absence (`government_has_flag` is the trigger that reads it).
 
@@ -39,9 +44,30 @@ All notable changes to Domainwright are recorded here. The format follows
 - The slider gate is closed on evidence rather than left open: vanilla sliders are scrollbar parts bound to engine
   settings, no value-change callback exists, and GUI code cannot write a script variable (SPEC §3.7).
 
+### Fixed
+
+- Script errors while building tooltips and descriptions. While an option or interaction is on screen the engine
+  dry-runs the effects behind it and evaluates every reachable `limit`, but executes nothing, so a limit that
+  read a variable logged three errors per refresh (47,817 lines in one session). Every limit now reads a script
+  value; the only variable access left is behind `exists =`, which is false rather than an error. A full session
+  on build 1.20.1.1 afterwards produced no error naming a `dlc_` identifier.
+- The delta hand-off never landed. An exit autosave held `dlc_pending` on three characters with no `dlc_delta`
+  and no ladder modifier anywhere in it; options now apply the step themselves.
+- `is_player = yes` replaced with `is_ai = no`. `is_player` is not a trigger in 1.20.1.1 and evaluated false,
+  which made the player-only access settings match nobody.
+- Removed `target_type = character`: only `title`, `artifact`, `men_at_arms` and `court_position_type` accept it.
+- Removed `else_if` from a scripted trigger, where it is not a valid key and discarded the whole trigger.
+- Withheld the menu's `open_window` option: `dlc_sg_open_window` is a scripted GUI, not an effect, so calling it
+  from script logs "Unknown effect".
+- Dropped the `on_death` hook, which replaces vanilla's `effect` block on that hook rather than extending it.
+- `dlc_remaining` is initialised before its first read.
+
 ### Known limitations
 
-- Nothing here has been validated in a running game yet. Milestone 1 of `SPEC.md` is the gate.
+- Only the log-level gate has been observed. A live session on build 1.20.1.1 loads, opens the menu and quits
+  with no error naming a `dlc_` identifier (R12); the hand-recorded report is
+  `tests/runtime/runs/2026-11-27-0.md`. The ladder's visible effect (R1, R3, R4, R7) is still unobserved, so
+  Milestone 1 of `SPEC.md` stays open.
 - `domain_limit_max` and strict-government rules may override the ladder; see the strict-government issue.
 - Multiplayer is unsupported. The slider is not shipped; the interface is button-driven.
 

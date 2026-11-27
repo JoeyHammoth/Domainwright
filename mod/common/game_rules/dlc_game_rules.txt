@@ -1,4 +1,4 @@
-### Domainwright: game rules.
+﻿### Domainwright: game rules.
 ###
 ### Settings are read with the bare trigger `has_game_rule = <setting_key>`.
 ### Non-default settings block achievements, matching vanilla's own domain-limit rule.

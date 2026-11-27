@@ -145,8 +145,9 @@ Modifier icons live in `common/modifier_icons/00_modifier_icons.txt`.
   wholesale; no registration file is needed.
 - Local variables are available inside effects: `set_local_variable = { name = x value = ... }` and
   `change_local_variable = { name = x add|subtract|multiply|divide = ... }`, seen in
-  `common/scripted_effects/00_lifestyle_focus_effects.txt:637-648`. They are used here to decompose the delta
-  without touching the persisted variable.
+  `common/scripted_effects/00_lifestyle_focus_effects.txt:637-648`. This mod does **not** use them: a local
+  variable is invisible to the tooltip dry-run pass, so the ladder tests bits of script values instead
+  (section 11).
 - There is **no** `clamp_variable` in the vanilla scripted effects swept; clamping is therefore done with
   explicit `if` guards around `set_variable`.
 
@@ -290,3 +291,30 @@ The traps the structure checker enforces come directly from the above:
 3. Loc files need the BOM — without it the first key is swallowed.
 4. Modifier keys must exist in `common/modifiers/` **and** have localization, or the tooltip shows the raw key.
 5. `supported_version` must match the installed build or the launcher warns.
+
+## 11. The tooltip dry-run pass
+
+While an event option or a character interaction is on screen, the game builds its tooltip by dry-running every
+effect behind it. That pass **evaluates every `limit` it reaches and executes nothing**. Each row below was
+observed on 1.20.1.1:
+
+| Observation | What it means |
+| --- | --- |
+| `set_variable` and `set_local_variable` are not executed | a variable a preceding effect would have set is still unset in the pass, so a `limit` reading it logs three errors per refresh: "Failed to fetch variable ...", "Event target link 'local_var' returned an unset scope", "Invalid left side during comparison 'local_var'" (47,817 lines in one session) |
+| `hidden_effect` is walked like any other effect | wrapping the call only moved the error to the wrapping line |
+| `show_as_tooltip` executes without a tooltip entry, and is walked too | wrapping the four delta options raised the count to 249 and pinned every stack to the interaction's `on_accept` |
+| `trigger_event` is expanded into the target event, and that event's `immediate` is walked | splitting the work into an immediate did not avoid the pass |
+| `exists = var:x` is safe | false, not an error, in the pass and at runtime; the only variable access allowed in a limit |
+| script values are not evaluated in the pass | a limit may read any script value freely |
+
+The rule that follows: **no `limit` reachable from an option or an interaction may read a variable.** The delta
+therefore exposes itself as script values (`mod/common/script_values/dlc_domain_limit_values.txt`) built on one
+`exists`-guarded read, and the ladder tests bits of those values instead of carrying a remainder in a local.
+
+### 11.1 A hand-off that does not survive
+
+An earlier version had each option record its step in `var:dlc_pending` and re-fire the event, applying it in the
+immediate. The pass was clean, but the step never landed: an exit autosave held `dlc_pending` on three characters
+with no `dlc_delta` and no ladder modifier anywhere in it. Self-re-firing from an option is legal in vanilla (7
+events do it), so the failure is specific to this chain rather than to the pattern; options now apply their step
+directly, which is safe precisely because of the rule above.

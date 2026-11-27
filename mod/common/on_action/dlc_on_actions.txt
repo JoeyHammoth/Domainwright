@@ -1,4 +1,4 @@
-### Domainwright: on_action additions.
+﻿### Domainwright: on_action additions.
 ###
 ### on_action definitions are additive across files: this file extends the vanilla hook
 ### by declaring only the blocks it needs. It never redefines a vanilla trigger or event
@@ -9,7 +9,18 @@
 ###   scope:title = the title that changed hands
 ###   scope:previous_holder = the previous holder
 
+### Reached through the `on_actions` list rather than a second `effect` block. Vanilla owns
+### the `effect` key on this hook, and 1.20.1.1 resolves a repeated key by keeping the most
+### recent one - "There is more than one 'effect' defined ... (on_title_gain_inheritance)" -
+### which silently dropped the inheritance below. `on_actions` is a key vanilla leaves unused
+### on this hook, so declaring it adds a call instead of competing for one.
 on_title_gain_inheritance = {
+	on_actions = {
+		dlc_inherit_on_succession
+	}
+}
+
+dlc_inherit_on_succession = {
 	effect = {
 		if = {
 			limit = { exists = scope:previous_holder }
@@ -22,11 +33,10 @@ on_title_gain_inheritance = {
 	}
 }
 
-### A dead ruler's permanent modifiers are meaningless; strip them so the successor does
-### not inherit invisible rungs through a scope bug. The delta variable dies with the
-### character, which is why inheritance copies it explicitly above.
-on_death = {
-	effect = {
-		dlc_clear_ladder_effect = yes
-	}
-}
+### Deliberately no on_death hook. A dead ruler's rungs are inert and var:dlc_delta dies
+### with the character, so cleanup buys nothing - while redefining the hook costs a lot:
+### vanilla declares on_death with its own `effect` block (common/on_action/death.txt:7),
+### and a second definition replaces it rather than merging. 1.20.1.1 logged
+### "There is more than one 'effect' defined using most recent ... (on_death)", i.e. the
+### music cue, the about-to-die flag and the legend inheritance were all being dropped.
+### Inheritance still copies the delta explicitly, above.
