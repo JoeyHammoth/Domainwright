@@ -54,6 +54,25 @@ explaining why.
 - Keep the ladder in `common/modifiers/` and the decomposition in `dlc_apply_delta`; do not hand-apply bits
   anywhere else, or the "exactly one modifier set" invariant breaks.
 
+## The project board
+
+The board is the Domainwright project linked to this repository (number 10). It is kept in step with the issues
+by .github/workflows/board.yml: a new or reopened issue becomes Todo, a closed one becomes Done. Run the workflow
+by hand (Actions, board, Run workflow) to resync every issue at once.
+
+The workflow needs a repository secret named PROJECT_TOKEN, a personal access token allowed to read and write
+Projects. A fine-grained token needs Projects: read and write on the owner account; a classic token needs the
+project scope. Without the secret the job warns and exits green, so forks and pull requests are unaffected.
+
+Board status is a consequence, not a promise: the workflow only writes when an issue is opened, reopened or
+closed, so a maintainer can move an item without it snapping back.
+
+## Issues we would like help with
+
+Anything labelled help wanted is open to outside contributors. The ones also labelled good first issue need no
+CK3 install: they are tooling, documentation or static-check work. Those issues are deliberately left unassigned
+so nobody reads them as already taken. Comment on the issue before starting so it can be assigned to you.
+
 ## Reporting a bug
 
 Use the bug report issue form. Include:
