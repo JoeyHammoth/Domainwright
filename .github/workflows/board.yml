@@ -1,8 +1,14 @@
 name: board
 
-# Keeps the Domainwright project in step with issue state: a new or reopened issue lands in
-# Todo, a closed one in Done. The project number defaults to 10 (the repo-linked board) and
-# can be overridden with a repository variable named PROJECT_NUMBER.
+# Keeps the Domainwright project in step with issue state, without undoing what a human set:
+#
+#   issue opened      -> added to the board as Todo
+#   issue closed      -> Done
+#   issue reopened    -> Todo, but only if it was sitting in Done
+#   issue still open  -> untouched, so In Progress survives a resync
+#
+# The project number defaults to 10 (the repo-linked board) and can be overridden with a
+# repository variable named PROJECT_NUMBER.
 #
 # Needs a repository secret named PROJECT_TOKEN: a personal access token allowed to read and
 # write Projects. A fine-grained token needs "Projects: read and write" on the owner account;
@@ -71,17 +77,52 @@ jobs:
             const TODO = optionId('Todo');
             const DONE = optionId('Done');
 
-            async function syncOne(contentId, state) {
-              // addProjectV2ItemById is idempotent: an item that already exists is returned
-              // rather than duplicated, so this doubles as a lookup.
-              const added = await github.graphql(`
-                mutation($project: ID!, $content: ID!) {
-                  addProjectV2ItemById(input: { projectId: $project, contentId: $content }) {
-                    item { id }
+            // Read the board once so an existing status is known before anything is written.
+            // Without this, a resync would treat every open issue as Todo and undo a manual
+            // In Progress.
+            const items = [];
+            let after = null;
+            do {
+              const page = await github.graphql(`
+                query($project: ID!, $after: String) {
+                  node(id: $project) {
+                    ... on ProjectV2 {
+                      items(first: 100, after: $after) {
+                        pageInfo { hasNextPage endCursor }
+                        nodes {
+                          id
+                          content { ... on Issue { id number state } }
+                          fieldValues(first: 20) {
+                            nodes {
+                              ... on ProjectV2ItemFieldSingleSelectValue {
+                                name
+                                field { ... on ProjectV2SingleSelectField { name } }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
-                }`, { project: project.id, content: contentId });
-              const itemId = added.addProjectV2ItemById.item.id;
+                }`, { project: project.id, after });
+              const conn = page.node.items;
+              items.push(...conn.nodes);
+              after = conn.pageInfo.hasNextPage ? conn.pageInfo.endCursor : null;
+            } while (after);
 
+            const board = new Map();
+            for (const item of items) {
+              if (!item.content || !item.content.id) continue;
+              const status = item.fieldValues.nodes.find(
+                (v) => v && v.field && v.field.name === 'Status'
+              );
+              board.set(item.content.id, {
+                itemId: item.id,
+                status: status ? status.name : null,
+              });
+            }
+
+            async function setStatus(itemId, option) {
               await github.graphql(`
                 mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
                   updateProjectV2ItemFieldValue(input: {
@@ -94,8 +135,37 @@ jobs:
                 project: project.id,
                 item: itemId,
                 field: statusField.id,
-                option: state === 'closed' ? DONE : TODO,
+                option,
               });
+            }
+
+            async function addToBoard(contentId) {
+              // Idempotent: an item that already exists is returned rather than duplicated.
+              const added = await github.graphql(`
+                mutation($project: ID!, $content: ID!) {
+                  addProjectV2ItemById(input: { projectId: $project, contentId: $content }) {
+                    item { id }
+                  }
+                }`, { project: project.id, content: contentId });
+              return added.addProjectV2ItemById.item.id;
+            }
+
+            async function syncOne(contentId, state) {
+              const existing = board.get(contentId);
+              const itemId = existing ? existing.itemId : await addToBoard(contentId);
+              const status = existing ? existing.status : null;
+
+              if (state === 'closed') {
+                if (status !== 'Done') await setStatus(itemId, DONE);
+                return 'Done';
+              }
+
+              if (!existing || status === 'Done' || status === null) {
+                await setStatus(itemId, TODO);
+                return 'Todo';
+              }
+
+              return `left as ${status}`;
             }
 
             if (context.eventName === 'issues') {
@@ -104,8 +174,8 @@ jobs:
                 core.info('Pull requests are not board items; nothing to do.');
                 return;
               }
-              await syncOne(issue.node_id, issue.state);
-              core.info(`#${issue.number} (${issue.state}) synced to the board.`);
+              const result = await syncOne(issue.node_id, issue.state);
+              core.info(`#${issue.number} (${issue.state}) -> ${result}`);
             } else {
               const issues = await github.paginate(github.rest.issues.listForRepo, {
                 owner: context.repo.owner,
@@ -115,7 +185,8 @@ jobs:
               });
               const real = issues.filter((i) => !i.pull_request);
               for (const issue of real) {
-                await syncOne(issue.node_id, issue.state);
+                const result = await syncOne(issue.node_id, issue.state);
+                core.info(`#${issue.number} (${issue.state}) -> ${result}`);
               }
-              core.info(`${real.length} issues synced to the board.`);
+              core.info(`${real.length} issues checked against the board.`);
             }
